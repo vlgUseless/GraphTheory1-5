@@ -62,7 +62,7 @@ vector<vector<T>> InputMatrix() {
 }
 
 double GaussDet(vector<vector<double>> m);
-void InputWeightMatrix(vector<vector<int>>& Matrix, const vector<vector<int>>& AdjMatrix);
+void InputWeightMatrix(vector<vector<double>>& Matrix, const vector<vector<int>>& AdjMatrix);
 void Menu();
 void InputProcessing(string Action, OrientedGraph*& OrGraph);
 vector<vector<int>> MultiplyMatrix(const vector<vector<int>>& Matrix1, const vector<vector<int>>& Matrix2);

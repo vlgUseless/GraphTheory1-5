@@ -58,7 +58,7 @@ int InputEdges(OrientedGraph* OrGraph) {
 		if (cin.fail() or edges < 1 or edges > OrGraph->getAdjMatrix().size() - 1) {
 			cin.clear();
 			cin.ignore(numeric_limits<streamsize>::max(), '\n');
-			cout << "Input must be a positive integer number below or equal" << OrGraph->getAdjMatrix().size() - 1 << ", try again: ";
+			cout << "Input must be a positive integer number below or equal " << OrGraph->getAdjMatrix().size() - 1 << ", try again: ";
 		}
 
 		else {
@@ -148,7 +148,7 @@ void PrintList2d(const vector<vector<int>> List, string ListName) {
 
 
 // Ручное заполнение матрицы весов
-void InputWeightMatrix(vector<vector<int>>& Matrix, const vector<vector<int>>& AdjMatrix) {
+void InputWeightMatrix(vector<vector<double>>& Matrix, const vector<vector<int>>& AdjMatrix) {
 	cout << "Enter the values of Weight Matrix for each rows. They must be based on the completion of the Adjacency Matrix: " << endl;
 
 	// Go through every row
@@ -247,22 +247,21 @@ void ProcessRouteAlg(OrientedGraph* OrGraph, string Alg) {
 		int n = 0;
 		int startV = InputVertex(OrGraph, n++);
 		int endV = InputVertex(OrGraph, n++);
-		vector<bool> visited(OrGraph->getNvertex(), 0);
 		if (startV <= endV) {
-			OrGraph->MaxRoute(OrGraph->getWeightMatrix() , startV, endV, visited, route, 1);
-			int sm = 0;
-			for (int i = 0; i < route.size() - 1; i++) {
-				sm += OrGraph->getWeightMatrix()[route[i]][route[i + 1]];
-			}
-			cout << "The longest route is " << sm << ": ";
-			for (int i = 0; i < route.size(); i++) {
-				if (i != route.size() - 1) {
-					cout << route[i] << "->";
-				}
-				else {
-					cout << route[i] << endl << endl;
-				}
-			}
+			OrGraph->MaxRoute(OrGraph->getWeightMatrix() , startV, endV, route, 1);
+			//int sm = 0;
+			//for (int i = 0; i < route.size() - 1; i++) {
+			//	sm += OrGraph->getWeightMatrix()[route[i]][route[i + 1]];
+			//}
+			//cout << "The longest route is " << sm << ": ";
+			//for (int i = 0; i < route.size(); i++) {
+			//	if (i != route.size() - 1) {
+			//		cout << route[i] << "->";
+			//	}
+			//	else {
+			//		cout << route[i] << endl << endl;
+			//	}
+			//}
 		}
 		else {
 			cout << "There's no route from vertex " << startV << " and vertex " << endV << "." << endl;

@@ -4,6 +4,7 @@
 #include <tuple>
 #include <queue>
 #include <iostream>
+#include <functional>
 #include <stack>
 using namespace std;
 
@@ -59,7 +60,7 @@ OrientedGraph::OrientedGraph(unsigned int _Nvertex, unsigned int _Nedge) : Abstr
 {
 	// Параметры генерации случайных чисел
 	srand(time(0));
-	int m = Nvertex / 2;
+	int m = Nvertex/2;
 	double p = 0.9;
 	
 	// Генерация количества рёбер, исходящих из каждой вершины / Заполнение вектора Parent
@@ -363,101 +364,62 @@ void AbstractGraph::DFS(int startV, int endV, vector<bool>& visited, vector<int>
 		}
 }
 
-bool AbstractGraph::MaxRoute(vector<vector<double>> Matrix, int startV, int endV, vector<bool> visited, vector<int>& route, bool PrintRoute) {
+bool AbstractGraph::MaxRoute(vector<vector<double>> Matrix, int startV, int endV, vector<int>& route, bool PrintRoute) {
 	int N = Matrix.size();
-	int iter = 0;
-	int flagDFS = 1;
-	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
-			if (Matrix[i][j] < 0) {
-				flagDFS = 0;
-				break;
+	vector<double> dist(N, -INFINITY); // Вектор со значениями максимальных путей
+	vector<int> parent(N, -1); // Вектор предшествующих вершин
+	dist[startV] = 0; // Максимальный путь до начальной вершины - 0
+
+	// Топологическая сортировка вершин
+	vector<int> topOrder;
+	vector<bool> visited(N, false);
+	function<void(int)> topologicalSort = [&](int v) {
+		visited[v] = true;
+		for (int i = 0; i < N; ++i) {
+			if (Matrix[v][i] != INFINITY && !visited[i]) {
+				topologicalSort(i);
+			}
+		}
+		topOrder.push_back(v);
+	};
+
+	for (int i = 0; i < N; ++i) {
+		if (!visited[i]) {
+			topologicalSort(i);
+		}
+	}
+	reverse(topOrder.begin(), topOrder.end());
+
+
+	for (int u : topOrder) {
+		if (dist[u] != -INFINITY) {
+			for (int v = 0; v < N; ++v) {
+				if (Matrix[u][v] != INFINITY) {
+					if (dist[u] + Matrix[u][v] > dist[v]) {
+						dist[v] = dist[u] + Matrix[u][v];
+						parent[v] = u;
+					}
+				}
 			}
 		}
 	}
-	// Если есть отрицательные веса, то запускаем Дейкстру, в противном случае 
-	if (flagDFS) {
-		vector<bool> visited(Nvertex, 0);
-		DFS(startV, endV, visited, route);
-		if (!route.empty()) {
-			return 1;
+
+	// Формирование пути
+	if (dist[endV] == -INFINITY) {
+		if (PrintRoute) {
+			cout << "There's no route between vertices " << startV << " and " << endV << "." << endl;
 		}
-		return 0;
+		return false;
 	}
 	else {
-		// Инвертируем вершины
-		for (int i = 0; i < N; i++) {
-			for (int j = 0; j < N; j++) {
-				if (Matrix[i][j] != INFINITY) {
-					Matrix[i][j] = -Matrix[i][j];
-					iter++;
-				}
-			}
+		for (int v = endV; v != -1; v = parent[v]) {
+			route.push_back(v);
 		}
-
-		vector<double> T(N, INFINITY); // Вектор со значениями кратчайших путей
-		vector<int> X(N, 0); // Все вершины не отмечены
-		vector<int> H(N, -1); // Вектор вершин, предшествующих i на кратчайшем пути
-		T[startV] = 0; // Кратчайший путь имеет длину 0
-		X[startV] = 1; // И он известен
-		int curV = startV; // Текущая вершина
-
-		// Обновление пометок
-		while (true) {
-			// Перебираем все вершины
-			for (int u = 0; u < N; u++) {
-				// Если в данной вершине мы ещё не были + в неё вообще можно попасть из текущей точки +
-				// + путь из текущей точки в неё короче прошлого пути
-				if (X[u] == 0 and Matrix[curV][u] != INFINITY and (T[curV] + Matrix[curV][u]) < T[u]) {
-					T[u] = T[curV] + Matrix[curV][u];
-					H[u] = curV;
-				}
-				iter++;
-			}
-			double m = INFINITY;
-			curV = -1;
-
-			// Ищем кратчайший путь на текущей итерации
-			for (int u = 0; u < N; u++) {
-				// Если в данной вершине мы ещё не были + путь в неё меньше предыдущего
-				if (X[u] == 0 and T[u] < m) {
-					// Переходим в данную вершину
-					curV = u;
-					// Обновляем кратчайший путь
-					m = T[u];
-				}
-				iter++;
-			}
-
-			if (curV == -1) {
-				if (PrintRoute) {
-					cout << "There's no route between vertices " << startV << " and " << endV << "." << endl;
-				}
-				break;
-			}
-			if (curV == endV) {
-				route.push_back(endV);
-				// Пока не дойдём до начальной вершины
-				while (route[route.size() - 1] != startV) {
-					route.push_back(H[route[route.size() - 1]]);
-					iter++;
-				}
-				break;
-
-			}
-			X[curV] = 1;
-			iter++;
-		}
-		sort(route.begin(), route.end());
-		// Инвертируем пути обратно
-		for (int i = 0; i < T.size(); i++) {
-			T[i] = -T[i];
-			iter++;
-		}
+		reverse(route.begin(), route.end());
 
 		if (PrintRoute) {
-			cout << "Longest route is " << T[curV] << ": ";
-			for (int i = 0; i < route.size(); i++) {
+			cout << "Longest route is " << dist[endV] << ": ";
+			for (size_t i = 0; i < route.size(); ++i) {
 				if (i != route.size() - 1) {
 					cout << route[i] << "->";
 				}
@@ -465,13 +427,11 @@ bool AbstractGraph::MaxRoute(vector<vector<double>> Matrix, int startV, int endV
 					cout << route[i] << endl;
 				}
 			}
-			cout << "Number of iterations: " << iter << endl << endl;
-
-			PrintList<double>(T, "Vector of longest routes");
 		}
-		return 1;
+		return true;
 	}
 }
+
 
 double AbstractGraph::SpanningTrees()
 {
@@ -1076,15 +1036,8 @@ void UnorientedGraph::MakeHamiltonian() {
 			}
 		}
 	}
-
-	
-	//cout << "-----New Hamiltonian graph-----" << endl << endl;
-	//PrintMatrix(AdjMatrix, "Adjacency Matrix");
-	//PrintList(VertexDegreeList, "List of vertex degrees");
-	//PrintList2d(AdjList, "Adjacency List");
-	//cout << CheckHamiltonian();
-
 }
+
 void UnorientedGraph::HamiltonianCycles(ofstream& out) {
 	// Initially value of boolean
 	// flag is false

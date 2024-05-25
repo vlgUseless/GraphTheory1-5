@@ -44,7 +44,7 @@ public:
 	bool Dijkstra(vector<vector<double>> Matrix, int startV, int endV, vector<int>& route,  bool PrintRoute);
 	void FloydWarshall(int startV, int endV);
 	bool BFS(vector<vector<double>> rGraph, int s, int t, vector<int>& parent);
-	bool MaxRoute(vector<vector<double>> Matrix, int startV, int endV, vector<bool> visited, vector<int>& route, bool PrintRoute);
+	bool MaxRoute(vector<vector<double>> Matrix, int startV, int endV, vector<int>& route, bool PrintRoute);
 	void DFS(int startV, int endV, vector<bool>& visited, vector<int>& route);
 	double SpanningTrees();
 
